@@ -9,6 +9,7 @@ import { tabularRouter } from "./routes/tabular";
 import { workflowsRouter } from "./routes/workflows";
 import { userRouter } from "./routes/user";
 import { downloadsRouter } from "./routes/downloads";
+import { bootstrapDemoPortfolios } from "./scripts/seed-demo";
 
 const app = express();
 const PORT = process.env.PORT ?? 3001;
@@ -34,6 +35,7 @@ app.use("/download", downloadsRouter);
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Mike backend running on port ${PORT}`);
+  await bootstrapDemoPortfolios();
 });

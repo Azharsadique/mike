@@ -10,6 +10,10 @@ export const GEMINI_MAIN_MODELS = [
     "gemini-3-flash-preview",
 ] as const;
 
+export const AZURE_MAIN_MODELS = ["azure-gpt-4o", "azure-gpt-4-turbo"] as const;
+export const AZURE_MID_MODELS = ["azure-gpt-4o-mini"] as const;
+export const AZURE_LOW_MODELS = ["azure-gpt-35-turbo"] as const;
+
 // Mid-tier (used for tabular review) — user picks one in account settings.
 export const CLAUDE_MID_MODELS = ["claude-sonnet-4-6"] as const;
 export const GEMINI_MID_MODELS = ["gemini-3-flash-preview"] as const;
@@ -30,6 +34,9 @@ const ALL_MODELS = new Set<string>([
     ...GEMINI_MID_MODELS,
     ...CLAUDE_LOW_MODELS,
     ...GEMINI_LOW_MODELS,
+    ...AZURE_MAIN_MODELS,
+    ...AZURE_MID_MODELS,
+    ...AZURE_LOW_MODELS,
 ]);
 
 // ---------------------------------------------------------------------------
@@ -39,6 +46,7 @@ const ALL_MODELS = new Set<string>([
 export function providerForModel(model: string): Provider {
     if (model.startsWith("claude")) return "claude";
     if (model.startsWith("gemini")) return "gemini";
+    if (model.startsWith("azure")) return "azure";
     throw new Error(`Unknown model id: ${model}`);
 }
 
