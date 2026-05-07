@@ -1,4 +1,4 @@
-import { OpenAIClient, AzureKeyCredential } from "@azure/openai";
+import { AzureOpenAI } from "openai";
 import type {
     StreamChatParams,
     StreamChatResult,
@@ -13,10 +13,10 @@ const RAW_STREAM_LOG_PATH = path.resolve(
     "azure-raw-stream.log",
 );
 
-function client(override?: string | null): OpenAIClient {
+function client(override?: string | null): AzureOpenAI {
     const endpoint = process.env.AZURE_OPENAI_ENDPOINT || "";
     const apiKey = override?.trim() || process.env.AZURE_OPENAI_API_KEY || "";
-    return new OpenAIClient(endpoint, new AzureKeyCredential(apiKey));
+    return new AzureOpenAI({ endpoint, apiKey, apiVersion: "2024-02-15-preview" });
 }
 
 // Simple guardrail check implementation
@@ -78,14 +78,13 @@ export async function streamAzure(
     let fullText = "";
 
     for (let iter = 0; iter < maxIter; iter++) {
-        const events = await azureClient.streamChatCompletions(
-            model,
-            messages,
-            {
-                tools: azureTools.length ? azureTools : undefined,
-                temperature: 0.7,
-            }
-        );
+        const events = await azureClient.chat.completions.create({
+            model: model,
+            messages: messages,
+            tools: azureTools.length ? azureTools as any : undefined,
+            temperature: 0.7,
+            stream: true
+        });
 
         let iterText = "";
         let toolCallMap: Record<number, any> = {};
@@ -101,9 +100,9 @@ export async function streamAzure(
                     callbacks.onContentDelta?.(choice.delta.content);
                 }
                 
-                if (choice.delta?.toolCalls) {
-                    for (const tc of choice.delta.toolCalls) {
-                        const index = tc.index || 0;
+                if (choice.delta?.tool_calls) {
+                    for (const tc of choice.delta.tool_calls) {
+                        const index = tc.index;
                         if (!toolCallMap[index]) {
                             toolCallMap[index] = {
                                 id: tc.id,
@@ -174,11 +173,11 @@ export async function completeAzureText(params: {
     }
     messages.push({ role: "user", content: params.user });
 
-    const resp = await azureClient.getChatCompletions(
-        params.model,
-        messages,
-        { maxTokens: params.maxTokens ?? 512 }
-    );
+    const resp = await azureClient.chat.completions.create({
+        model: params.model,
+        messages: messages,
+        max_tokens: params.maxTokens ?? 512
+    });
 
     const text = resp.choices[0]?.message?.content || "";
     
