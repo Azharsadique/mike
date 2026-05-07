@@ -9,6 +9,7 @@ import { tabularRouter } from "./routes/tabular";
 import { workflowsRouter } from "./routes/workflows";
 import { userRouter } from "./routes/user";
 import { downloadsRouter } from "./routes/downloads";
+import { portfoliosRouter } from "./routes/portfolios";
 import { bootstrapDemoPortfolios } from "./scripts/seed-demo";
 
 const app = express();
@@ -32,6 +33,7 @@ app.use("/workflows", workflowsRouter);
 app.use("/user", userRouter);
 app.use("/users", userRouter);
 app.use("/download", downloadsRouter);
+app.use("/portfolios", portfoliosRouter);
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
